@@ -5,22 +5,25 @@
 
         # Script is currently only used on Teradata TPA nodes and some TMS servers.
         # Script gatheres some system info and faults, and output is in HTML format.
-
-
-
-       ## Variables
-
-        # Version info.
-version=02.00.01.00
-
-        # Temp folder for temp data.
-tempfolder=/tmp/hscrypt.v2
-logfile=/var/log/health.script.log
-installfolder=/home/support/system.health.scripts
-dumpfolder=/home/support/system.health.scripts/export
-dumpfile=/home/support/system.health.scripts/export/$(cat /etc/HOSTNAME).system.health.report.log
-textfile=/home/support/system.health.scripts/export/$(cat /etc/HOSTNAME).system.health.report.txt
-
+                                                                                                                                                                                     
+                                                                                                                                                                                     
+                                                                                                                                                                                     
+       ## Variables                                                                                                                                                                  
+                                                                                                                                                                                     
+        # Version info.                                                                                                                                                              
+version=00.02.01.03                                                                                                                                                                  
+                                                                                                                                                                                                                  
+        # Temp folder for temp data.                                                                                                                                                                              
+tempfolder=/tmp/hscrypt.v2                                                                                                                                                                                        
+logfile=/var/log/health.script.log                                                                                                                                                                                
+installfolder=/home/support/system.health.scripts                                                                                                                                                                 
+dumpfolder=/home/support/system.health.scripts/export                                                                                                                                                             
+dumpfile=/home/support/system.health.scripts/export/$(cat /etc/HOSTNAME).system.health.report.log                                                                                                                 
+textfile=/home/support/system.health.scripts/export/$(cat /etc/HOSTNAME).system.health.report.txt                                                                                                                 
+                                                                                                                                                                                                                  
+        # App variable.                                                                                                                                                                                           
+keytab=/etc/teradata.keytab                                                                                                                                                                                       
+                                                                                                                                                                                                                  
         # SCP info.
 scpuser=root
 scpipaddress=10.144.179.102
@@ -195,7 +198,8 @@ echo -e "              </td> \n" >> $dumpfile
         # System Summary header
 echo -e "              <td style='width:30%'> \n" >> $dumpfile
 
-        # Summary - collecting info from chk_all script (part of GSCTOOLS)         # Sending output to file and greping info
+        # Summary - collecting info from chk_all script (part of GSCTOOLS) 
+        # Sending output to file and greping info
         # tee is used to send output to two files
 echo -e "       <pre> \n" >> $dumpfile
 echo -e "System Summary: \n" | tee -a $dumpfile $textfile > /dev/null
@@ -252,7 +256,8 @@ echo -e "
 #!/bin/bash
 
 tempfolder=/tmp/hscrypt.v2
-         # Create an array for the 24 hours.
+ 
+        # Create an array for the 24 hours.
 fulldayinhoursarray=( 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 )
         # Then we use array in for loop - we get idle time avarage per hour and devide by 12.
         # Using paste -sd+ to put plus signs inbetween values, and then use bc to do Sum.
@@ -316,7 +321,12 @@ if [ $servermake = "DELL" ]
      )
 fi
 
-        # servertype = TPA done...
+       # Processes.
+/opt/teradata/tdat/pde/$(/usr/pde/bin/pdepath -i | grep PDE: | cut -d' ' -f2)/bin/psh \
+    "/bin/ps axo stat,ppid,pid,comm | grep -w defunct" > $tempfolder/ALL.Nodes.zombie.txt
+
+
+       # servertype = TPA done...
 
        )
 fi
@@ -487,6 +497,16 @@ echo -e "               </pre> \n" >> $dumpfile
 ############################
 ##### Sensor Data end. #####
 ############################
+
+
+##### Process info. #####
+
+          # Zombie processes.
+echo -e "<div class='a1'>Zombie processes:</div>" >> $dumpfile
+echo -e "               <pre> \n" >> $dumpfile
+cat $tempfolder/ALL.Nodes.zombie.txt | tee -a $dumpfile $textfile > /dev/null
+echo -e "               </pre> \n" >> $dumpfile
+
 
 ###############################
 ##### Closing Table data. #####
@@ -666,8 +686,8 @@ echo -e "           <pre> \n" >> $dumpfile
 if [ $servertype = "TPA" ]
    then (
 
-/usr/lib/mit/bin/klist -ke /etc/teradata.keytab | grep -i cop \
-     > $tempfolder/krlist.out.txt
+/usr/lib/mit/bin/klist -ke $keytab | grep -i cop \
+     | tee -a $dumpfile $tempfolder/krlist.out.txt > /dev/null
         sleep 2
             for i in $(cat $tempfolder/krlist.out.txt | sed -e 's/^[[:space:]]*//' \
                 | cut -d' ' -f2 | cut -d'@' -f1) ; \
@@ -695,6 +715,92 @@ rm $tempfolder/krlist.out*.txt
 fi
 echo -e "           </pre> \n" >> $dumpfile
 
+### Array healt output.
+
+echo -e "<div class='a1'>Array healt:</div>" >> $dumpfile
+echo -e "           <pre> \n" >> $dumpfile
+if [ $servertype = "TPA" ]
+   then (
+
+#What array is being used
+/opt/teradata/gsctools/bin/machinetype | grep "SCSI:" | grep -o "LSI" | sort -u >> $tempfolder/system.health.array_type.txt
+/opt/teradata/gsctools/bin/machinetype | grep "SCSI:" | grep -o "DotHill" | sort -u >> $tempfolder/system.health.array_type.txt
+ while read array_type1 ;
+ do if [ "$array_type1" = "LSI" ] ;
+ then
+     (
+
+#Running LSI array checks
+/opt/teradata/tdat/pde/$(/usr/pde/bin/pdepath -i | grep PDE: | cut -d' ' -f2)/bin/psh "/usr/bin/SMcli -d -v" \
+     | sed '/SMcli completed successfully/d' | sed '/^$/d' \
+     | tee -a $dumpfile $textfile $tempfolder/SM.output.health.txt > /dev/null
+cat $tempfolder/SM.output.health.txt | awk '!/byn0/' \
+     | grep 'Needs Attention' \
+     | cut -d' ' -f1 > $tempfolder/faulty.array.list.txt
+if [[ -s $tempfolder/faulty.array.list.txt ]]
+ then echo -e "\n*****There are Faults in the Arrays*****\n       Fauilty Array list... \n$(cat $tempfolder/faulty.array.list.txt)\n" \
+     | tee -a $dumpfile $textfile > /dev/null
+ else echo -e "\n*****All Array are Healthy*****\n" | tee -a $dumpfile $textfile > /dev/null
+fi
+while read in
+ do SMcli -n "$in" -c 'show storageArray healthStatus;'
+ done < $tempfolder/faulty.array.list.txt \
+     | sed '/Performing syntax check.../d' \
+     | sed '/Syntax check complete./d' \
+     | sed '/Executing script.../d' \
+     | sed '/Script execution complete./d' \
+     | sed '/SMcli completed successfully./d' \
+     | sed '/The controller clocks/d' \
+     | sed '/Controller/d' \
+     | sed '/Storage Management Station/d' \
+     | sed '/^$/d' \
+     | tee -a $dumpfile $textfile > /dev/null
+
+     )
+ fi ;  done < $tempfolder/system.health.array_type.txt
+
+ while read array_type1 ;
+ do if [ "$array_type1" = "DotHill" ] ;
+ then
+     (
+
+#Running DotHill array checks
+#Run chk_array script
+/opt/teradata/gsctools/bin/chk_array
+  #Check if chk_array output is created not or old --- if error is 1 then old
+  chk_array_variable1=$(/bin/ls -hail /var/opt/teradata/gsctools/chk_array/data/chk_array.txt | cut -d' ' -f7,8)
+  chk_array_variable2=$(/bin/date | cut -d' ' -f2,3)
+
+ /usr/bin/diff <$(echo "$chk_array_variable1") <$(echo "$chk_array_variable2") > /dev/null 2>&1 ; \
+     error=$? ; \
+     if [ $error -eq 0 ] ; \
+         then echo "Output of chk_array output is current..." \
+             | tee -a $dumpfile $textfile > /dev/null ; \
+         else echo "Output of chk_array script output ***NOT*** current..." \
+             | tee -a $dumpfile $textfile > /dev/null ; \
+     fi
+
+  #Extract raw DAMC outputs from text file
+  /bin/cat /var/opt/teradata/gsctools/chk_array/data/chk_array.txt | grep "DAMC" -A5 > $tempfolder/system.health.chk_array1.txt
+  #Use grep and sed to remove info
+  /bin/cat $tempfolder/system.health.chk_array1.txt | sed '/###################/d' > $tempfolder/system.health.chk_array2.txt
+  /bin/cat $tempfolder/system.health.chk_array2.txt | grep 'DAMC' | sort -u > $tempfolder/system.health.chk_array3.txt
+  /bin/cat $tempfolder/system.health.chk_array3.txt | sed 's/^[^:]*://' | sed -e 's/^[ \t]*//' > $tempfolder/system.health.chk_array4.txt
+  while read pat ; do grep -m 1 "$pat" $tempfolder/system.health.chk_array2.txt -A5 ; done < $tempfolder/system.health.chk_array4.txt > $tempfolder/system.health.chk_array5.txt
+  /bin/cat $tempfolder/system.health.chk_array5.txt | sed '/Vendor:/d' | sed '/Prodid:/d' | sed '/MidPlaine_SN:/d' | sed '/Enclosure Count:/d' \
+       | tee -a $dumpfile $textfile > /dev/null
+
+#Display faulty drives:
+cat /var/opt/teradata/gsctools/chk_array/data/chk_array.txt | grep 'HITACHI HUC' | grep -i -v 'OK' \
+    | tee -a $dumpfile $textfile > /dev/null
+
+     )
+ fi ;
+done < $tempfolder/system.health.array_type.txt
+
+   )
+fi
+echo -e "           </pre> \n" >> $dumpfile
 
 
 #########################
@@ -758,16 +864,82 @@ sed 's/--//g' $tempfolder/ALL.Nodes.cpu.data.usage.time.24hours.txt >> $textfile
        ## Messages from /var/log/messages
         # WARNINGS
 echo -e "        <pre> \n" >> $dumpfile
-echo -e " Warnings: \n" | tee -a $dumpfile $textfile > /dev/null
-cat /var/log/messages | grep "`date --date="yesterday" +%b\ %e`" | grep -i 'warning' | tee -a $dumpfile $textfile > /dev/null
+echo -e "<p style='font-weight:bold; color:blue'> Warnings: </p> \n" | tee -a $dumpfile $textfile > /dev/null
+
+        # Dump messages file.
+cat /var/log/messages | grep "`date --date="yesterday" +%b\ %e`" | grep -i 'warning' > \
+     $tempfolder/warning.messages.txt
+
+        # Removing messages that can be ignored.
+cat $tempfolder/warning.messages.txt | \
+     grep -v '9470: Warning: DBQL XMLPLAN/STATSUSAGE' \
+     grep -v 'WARNING: DBSControl is running in System FE' \
+     | tee -a $dumpfile $textfile > /dev/null
+
+        # Next check if error 9470 was present and how many times.
+cat $tempfolder/warning.messages.txt | grep '9470: Warning: DBQL XMLPLAN/STATSUSAGE' | wc -l > \
+     $tempfolder/9470.txt
+if [ -z $(grep "0" "$tempfolder/9470.txt") ];
+     then echo -e " \n" | tee -a $dumpfile $textfile > /dev/nul && \
+          echo "<p style='color:blue'>  ---  9470: Warning: DBQL XMLPLAN/STATSUSAGR displayed $(cat $tempfolder/9470.txt) times </p>" \
+              | tee -a $dumpfile $textfile > /dev/null && \
+          echo -e "         ---  Information, can be ignored - fixed in TDBMS version 16.20.25.01 (KB0030015) \n" \
+              | tee -a $dumpfile $textfile > /dev/null
+fi
+
+        # Next check if INFO message 2900 was present and how many times.
+cat $tempfolder/warning.messages.txt | grep 'WARNING: DBSControl is running in System FE' | wc -l > \
+     $tempfolder/2900.txt
+if [ -z $(grep "0" "$tempfolder/2900.txt") ];
+     then echo -e " \n" | tee -a $dumpfile $textfile > /dev/nul && \
+          echo "<p style='color:blue'>  ---  2900: WARNING: DBSControl is running in System FE mode displayed $(cat $tempfolder/2900.txt) times </p>" \
+              | tee -a $dumpfile $textfile > /dev/null && \
+          echo -e "         ---  Information, can be ignored - there are monitoring scripts, accessing dbscontrol settings periodically (RECJ4445X) \n" \
+              | tee -a $dumpfile $textfile > /dev/null
+fi
+
+        # Cleanup of messages output files.
+rm $tempfolder/warning.messages.txt
+rm $tempfolder/9470.txt
+rm $tempfolder/2900.txt
+
+
+
         # FAILURES
-echo -e " Failures: \n" | tee -a $dumpfile $textfile > /dev/null
+echo -e "<p style='font-weight:bold; color:orange'> Failures: </p> \n" | tee -a $dumpfile $textfile > /dev/null
 cat /var/log/messages | grep "`date --date="yesterday" +%b\ %e`" | grep -i 'fail' | tee -a $dumpfile $textfile > /dev/null
         # ERRORS
 echo -e " Errors: \n" | tee -a $dumpfile $textfile > /dev/null
 cat /var/log/messages | grep "`date --date="yesterday" +%b\ %e`" | grep -i 'error' | tee -a $dumpfile $textfile > /dev/null
+
+         # ABORTED
 echo -e " Aborted Sessions: \n" | tee -a $dumpfile $textfile > /dev/null
 cat /var/log/messages | grep "`date --date="yesterday" +%b\ %e`" | grep -i 'Transaction has been Aborted' -A3 | tee -a $dumpfile $textfile > /dev/null
+
+         # UCAbort
+echo -e "<p style='font-weight:bold; color:blue'> UCAbort: </p> \n" | tee -a $dumpfile $textfile > /dev/null
+cat /var/log/messages | grep "`date --date="yesterday" +%b\ %e`" | grep -i 'UCAbort' > \
+     $tempfolder/UCAbort.messages.txt
+
+        # Removing messages that can be ignored.
+cat $tempfolder/UCAbort.messages.txt | \
+     grep -v 'OldState is CS_LOGOFFRSPOKINTRAN, Network Event is CE_LOGOFFMSGRSPOK, NewState is CS_OFFWAITUCABTRSP' \
+     | tee -a $dumpfile $textfile > /dev/null
+
+cat $tempfolder/UCAbort.messages.txt | grep 'OldState is CS_LOGOFFRSPOKINTRAN, Network Event is CE_LOGOFFMSGRSPOK, NewState is CS_OFFWAITUCABTRSP' | wc -l > \
+     $tempfolder/UCAbort1.txt
+if [ -z $(grep "0" "$tempfolder/UCAbort1.txt") ];
+     then echo -e " \n" | tee -a $dumpfile $textfile > /dev/nul && \
+          echo "<p style='color:blue'>  ---  Sending UCAbort message to the database for Session displayed $(cat $tempfolder/UCAbort1.txt) times </p>" \
+              | tee -a $dumpfile $textfile > /dev/null && \
+          echo -e "         ---  Information, can be ignored - CS_LOGOFFRSPOKINTRAN, CE_LOGOFFMSGRSPOK, CS_OFFWAITUCABTRSP - from DataLabs (KB0028808)  \n" \
+              | tee -a $dumpfile $textfile > /dev/null
+fi
+
+        # Cleanup of messages output files.
+rm $tempfolder/UCAbort.messages.txt
+rm $tempfolder/UCAbort1.txt
+
 echo -e "        </pre> \n" >> $dumpfile
 
 
@@ -819,12 +991,21 @@ awk 'NF > 0' $textfile > $tempfolder/pre.out.master.txt
 ##### Script History.... #####
 ##############################
 
-## 02.00.00.00
+## 00.02.00.00
 ## Total redesign and initial release.
 ##
-## 02.00.10.00
+## 00.02.01.01
 ## Added some system information scripts for Teradata TPA systems.
 ##
+## 00.02.01.01
+## Added Kerberos testing.
 ## Tasks
 ##  -- Added proper logging.
 ##  -- Fix TEXT version - output needs attention.
+##
+## 00.02.01.02
+## Added Array test.
+##
+## 00.02.01.03
+## Fixed up some outputs from messages file in the "WARNINGS" section.
+##
