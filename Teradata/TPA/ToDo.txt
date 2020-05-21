@@ -1,0 +1,2 @@
+1) Add Network errors in log files.
+2) Add network speeds from SAR.
