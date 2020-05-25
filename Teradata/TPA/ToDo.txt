@@ -1,2 +1,5 @@
 1) Add Network errors in log files.
 2) Add network speeds from SAR.
+3) Config file checks.
+4) Last logon checks.
+5) Proper change history.
