@@ -1,0 +1,25 @@
+Version 1 - was crap, so I did a rewrite....
+
+##############################
+##### Script History.... #####
+##############################
+
+## 00.02.01.04
+## Fixed up some outputs from messages file in the "FAILURES" section.
+## cosmetic changes to output and added coloring in variables.
+## Added some support for 7011 ( Intelliflex 2.1 )
+##
+## 00.02.01.03
+## Fixed up some outputs from messages file in the "WARNINGS" section.
+##
+## 00.02.01.02
+## Added Array test.
+##
+## 00.02.01.01
+## Added Kerberos testing.
+## Tasks
+##  -- Added proper logging.
+##  -- Fix TEXT version - output needs attention.
+##
+## 00.02.00.00
+## Total redesign and initial release.
