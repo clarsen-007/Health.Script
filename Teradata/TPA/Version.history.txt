@@ -4,6 +4,12 @@ Version 1 - was crap, so I did a rewrite....
 ##### Script History.... #####
 ##############################
 
+## 00.02.01.06
+## Added network info
+##
+## 00.02.01.05
+## Added NETAPP array to testing array health.
+##
 ## 00.02.01.04
 ## Fixed up some outputs from messages file in the "FAILURES" section.
 ## cosmetic changes to output and added coloring in variables.
