@@ -1491,6 +1491,7 @@ awk 'NF > 0' $textfile > $tempfolder/pre.out.master.txt
 ##############################
 
 ##
+##
 ## 00.02.04.00
 ## Added CPU and AWT SQL for TPA nodes.
 ##
