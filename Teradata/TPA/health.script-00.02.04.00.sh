@@ -12,7 +12,7 @@
        ## Variables
 
         # Version info.
-version=00.02.03.01
+version=00.02.04.00
 
         # Temp folder for temp data.
 tempfolder=/tmp/hscrypt.v2
