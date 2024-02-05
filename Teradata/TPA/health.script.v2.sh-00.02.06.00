@@ -38,8 +38,8 @@ scpuser=root
 btequser=systemfe
 
         # SCP info.
-scpkey=/root/.ssh/id_rsa_onprem_BAR
-scpipaddress=172.16.36.240
+scpkey=
+scpipaddress=
 scpremotefolder=/home/support/system.health.scripts/import/
 
         # Cactus
