@@ -43,7 +43,7 @@ scpipaddress=172.16.36.240
 scpremotefolder=/home/support/system.health.scripts/import/
 
         # Cactus
-XXXXXXXXXXX
+cactus1=
 
         # Graphs
         ## Available options:
