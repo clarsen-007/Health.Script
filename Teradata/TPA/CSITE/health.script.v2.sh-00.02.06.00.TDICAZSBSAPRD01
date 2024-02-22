@@ -81,7 +81,7 @@ if [ "$1" == "-p" ]
      read -sp " Password : " varpassword1
      echo -e " "
      echo -e " Encrypted Password below : "
-        echo $varpassword1 | openssl enc -aes-256-cbc -salt -a -pass pass:$(cactusfile)
+        echo $varpassword1 | openssl enc -aes-256-cbc -salt -a -pass pass:$cactusfile
      echo -e " "
      exit
 fi
@@ -1734,7 +1734,7 @@ echo -e "<div class='a1'>Database CPU and AWT data:</div>" >> $dumpfile
 echo -e "           <pre> \n" >> $dumpfile
 
 /usr/bin/bteq <<EOI
-.logon /$btequser,$( echo $cactus1 | openssl enc -aes-256-cbc -salt -a -d -pass pass:$(cactusfile));
+.logon /$btequser,$( echo $cactus1 | openssl enc -aes-256-cbc -salt -a -d -pass pass:$cactusfile );
 .export report file=$tempfolder/cpuawt.csv
 .width 2000
 
