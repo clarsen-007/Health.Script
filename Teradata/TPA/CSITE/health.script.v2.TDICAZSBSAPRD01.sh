@@ -46,7 +46,7 @@ upload2gscfolder=/home/support/system.health.scripts/import/
 
         # Cactus
 cactusfile=$(cat /etc/machine-id)
-cactus1=U2FsdGVkX1+JGbuXQY+hQIbsxMIQjiFOncCkWng8P40=
+cactus1=U2FsdGVkX1/GSj7ExIHJkF0YayT0YsaMlCuUn5hExPw=
 
         # Graphs
         ## Available options:
