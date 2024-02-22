@@ -2070,7 +2070,7 @@ AxedaOnCMIC=
 AxedaGTW=
 AxedaUser= " > $gscupload
 
-/opt/teradata/gsctools/bin/upload2gsc $dumpfile
+/opt/teradata/gsctools/bin/upload2gsc -d -i CS1234567 $dumpfile
 
 #############################################
 ##### Cleanup old log and output files  #####
