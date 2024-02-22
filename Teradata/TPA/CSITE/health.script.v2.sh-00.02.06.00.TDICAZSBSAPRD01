@@ -2057,6 +2057,19 @@ echo -e " </HTML> \n" >> $dumpfile
      fi
 
        ## Sending file via UPLOAD2GSC
+
+echo -e "SiteID=AXYZ01
+Name=AA123456
+Phone=99999
+Email=AA123456@Teradata.com
+Proxy=
+NAT=
+Cipher=aes256
+Axeda=
+AxedaOnCMIC=
+AxedaGTW=
+AxedaUser= " > $gscupload
+
 /opt/teradata/gsctools/bin/upload2gsc $dumpfile
 
 #############################################
