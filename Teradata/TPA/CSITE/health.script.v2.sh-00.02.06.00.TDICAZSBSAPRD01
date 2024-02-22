@@ -21,6 +21,7 @@ installfolder=/home/support/system.health.scripts
 dumpfolder=/tmp/hscrypt.v2
 dumpfile=/tmp/hscrypt.v2/$(cat /etc/HOSTNAME).system.health.report.log
 textfile=/tmp/hscrypt.v2/$(cat /etc/HOSTNAME).system.health.report.txt
+gscupload=/root/.upload2gsc
 
         # Coloring.
 rounded_Border_Header=orangered
