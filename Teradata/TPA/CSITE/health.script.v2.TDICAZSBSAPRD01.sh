@@ -12,14 +12,14 @@
        ## Variables
 
         # Version info.
-version=00.02.06.01
+version=00.02.06.02
 
         # Temp folder for temp data.
 tempfolder=/tmp/hscrypt.v2
 logfile=/var/log/health.script.log
 installfolder=/home/support/system.health.scripts
 dumpfolder=/tmp/hscrypt.v2
-dumpfile=/tmp/hscrypt.v2/$( /opt/teradata/gsctools/bin/get_siteid ).system.health.report.log
+dumpfile=/tmp/hscrypt.v2/$( /opt/teradata/gsctools/bin/get_siteid ).system.health.report.$( date +%Y%m%d ).log
 textfile=/tmp/hscrypt.v2/$(cat /etc/HOSTNAME).system.health.report.txt
 gscupload=/root/.upload2gsc
 
