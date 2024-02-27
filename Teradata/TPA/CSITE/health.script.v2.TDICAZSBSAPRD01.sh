@@ -599,8 +599,16 @@ echo -e "System Summary: \n" | tee -a $dumpfile $textfile > /dev/null
          fi
 echo -e "$(cat $tempfolder/chk_all.script.out.log | grep 'SiteID:') \n" | sed '$ {/^$/d;}' \
       | tee -a $dumpfile > /dev/null
-echo -e "$(cat $tempfolder/chk_all.script.out.log | grep 'System Name:') \n" | sed '$ {/^$/d;}' \
-      | tee -a $dumpfile > /dev/null
+
+if [[ $( cat $tempfolder/chk_all.script.out.log | grep 'System Name:' | cut -d':' -f2 ) -eq 0 ]]
+     then
+         echo -e "$(cat $tempfolder/chk_all.script.out.log | grep 'System Name:')   System PDN Node has issues... \n" | sed '$ {/^$/d;}' \
+                | tee -a $dumpfile > /dev/null
+     else
+         echo -e "$(cat $tempfolder/chk_all.script.out.log | grep 'System Name:') \n" | sed '$ {/^$/d;}' \
+                | tee -a $dumpfile > /dev/null
+fi
+
 echo -e "$(cat $tempfolder/chk_all.script.out.log | grep 'DBS Version:') \n" | sed '$ {/^$/d;}' \
       | tee -a $dumpfile > /dev/null
 echo -e "$(cat $tempfolder/chk_all.script.out.log | grep 'PDE Version:') \n" | sed '$ {/^$/d;}' \
