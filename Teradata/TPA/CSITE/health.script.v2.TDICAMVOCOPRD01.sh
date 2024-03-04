@@ -12,7 +12,7 @@
        ## Variables
 
         # Version info.
-version=00.02.06.03
+version=00.02.06.04
 
         # Temp folder for temp data.
 tempfolder=/tmp/hscrypt.v2
@@ -600,7 +600,7 @@ echo -e "System Summary: \n" | tee -a $dumpfile $textfile > /dev/null
 echo -e "$(cat $tempfolder/chk_all.script.out.log | grep 'SiteID:') \n" | sed '$ {/^$/d;}' \
       | tee -a $dumpfile > /dev/null
 
-if [[ $( cat $tempfolder/chk_all.script.out.log | grep 'System Name:' | cut -d':' -f2 ) -eq 0 ]]
+if [[ $( cat $tempfolder/chk_all.script.out.log | grep 'System Name:' | cut -d':' -f2 ) == 0 ]]
      then
          echo -e "$(cat $tempfolder/chk_all.script.out.log | grep 'System Name:') <p style='color:red'>System PDN Node has issues...</p> \n" | sed '$ {/^$/d;}' \
                 | tee -a $dumpfile > /dev/null
